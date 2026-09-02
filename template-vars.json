@@ -1,0 +1,38 @@
+{
+  "ANTHROPIC_API_KEY": {
+    "name": "Anthropic API Key",
+    "defaultValue": "",
+    "description": "REQUIRED. Anthropic API key that powers the AI agent (sk-ant-...). Get one at https://console.anthropic.com. The app will not start without it.",
+    "isOptional": false
+  },
+  "PORT": {
+    "name": "Gateway Port",
+    "defaultValue": "18789",
+    "description": "HTTP gateway port. Must stay 18789 — it matches the Railway domain target port configured in this template.",
+    "isOptional": true
+  },
+  "CLODDS_TOKEN": {
+    "name": "Gateway API Token",
+    "defaultValue": "",
+    "description": "Optional secret token for gateway API access. Recommended for public deployments. Leave empty to allow unauthenticated local API access.",
+    "isOptional": true
+  },
+  "WEBCHAT_TOKEN": {
+    "name": "WebChat Token",
+    "defaultValue": "",
+    "description": "Optional auth token required by the built-in WebChat client. Leave empty for open WebChat access.",
+    "isOptional": true
+  },
+  "TELEGRAM_BOT_TOKEN": {
+    "name": "Telegram Bot Token",
+    "defaultValue": "",
+    "description": "Optional. Telegram bot token from @BotFather to enable the Telegram channel. Leave empty to skip (WebChat works without any channel).",
+    "isOptional": true
+  },
+  "DISCORD_BOT_TOKEN": {
+    "name": "Discord Bot Token",
+    "defaultValue": "",
+    "description": "Optional. Discord bot token to enable the Discord channel. Leave empty to skip.",
+    "isOptional": true
+  }
+}
