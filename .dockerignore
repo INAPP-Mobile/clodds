@@ -1,0 +1,11 @@
+.git
+.github
+rust
+tests
+docs
+node_modules
+dist
+*.md
+!README.md
+audit-ci.jsonc
+docker-compose.yml

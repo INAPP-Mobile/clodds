@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0ea5e9"/>
+      <stop offset="100%" stop-color="#22c55e"/>
+    </linearGradient>
+    <linearGradient id="g2" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#22d3ee"/>
+      <stop offset="100%" stop-color="#4ade80"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="48" fill="url(#g)"/>
+  <!-- abstract candlestick chart: three bars ascending -->
+  <rect x="58" y="150" width="26" height="58" rx="6" fill="white" opacity="0.9"/>
+  <rect x="67" y="128" width="8" height="14" rx="3" fill="white" opacity="0.7"/>
+  <rect x="115" y="118" width="26" height="90" rx="6" fill="white" opacity="0.95"/>
+  <rect x="124" y="96" width="8" height="16" rx="3" fill="white" opacity="0.7"/>
+  <rect x="172" y="78" width="26" height="130" rx="6" fill="white"/>
+  <rect x="181" y="56" width="8" height="16" rx="3" fill="white" opacity="0.7"/>
+  <!-- trend arrow -->
+  <path d="M54 130 L96 100 L128 112 L186 48" stroke="url(#g2)" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.5"/>
+</svg>
