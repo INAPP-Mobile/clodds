@@ -1,6 +1,6 @@
 # Clodds — AI Trading Terminal for Prediction Markets & Crypto
 
-[![Deploy to Railway](https://railway.app/button.svg)](https://railway.com/deploy/clodds)
+[![Deploy to Railway](https://railway.app/button.svg)](https://railway.com/deploy/8Qf2_m)
 
 Clodds (Claude + Odds) is a personal AI trading terminal for prediction markets, crypto spot, perpetual futures, and token launches. Chat with your trading agent through a built-in WebChat UI or 21 messaging platforms, trade across 10 prediction markets and 7 futures exchanges, and manage your portfolio — all through natural conversation. Powered by Claude with 118+ trading strategies, whale tracking, arbitrage detection, and copy trading.
 
