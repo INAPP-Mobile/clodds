@@ -134,7 +134,7 @@
     "grammy": "^1.40.0",
     "hyperliquid": "^1.7.7",
     "inquirer": "^9.2.14",
-    "ioredis": "^5.9.3",
+    "ioredis": "^6.0.0",
     "json5": "^2.2.3",
     "mammoth": "^1.11.0",
     "node-cron": "^3.0.3",
