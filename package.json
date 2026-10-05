@@ -107,7 +107,7 @@
     "@whiskeysockets/baileys": "^6.7.0",
     "@wormhole-foundation/sdk": "^4.11.0",
     "@wormhole-foundation/sdk-evm": "^4.9.1",
-    "@wormhole-foundation/sdk-evm-cctp": "^4.9.1",
+    "@wormhole-foundation/sdk-evm-cctp": "^6.1.5",
     "@wormhole-foundation/sdk-evm-tokenbridge": "^4.9.1",
     "@wormhole-foundation/sdk-solana": "^4.9.1",
     "@wormhole-foundation/sdk-solana-cctp": "^4.9.1",
