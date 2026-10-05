@@ -2,7 +2,7 @@
 # https://github.com/alsk1992/CloddsBot
 # Source build (no upstream Docker image published). Based on upstream Dockerfile
 # with Railway adaptations: listen on $PORT, root user for volume, healthcheck.
-FROM node:22-bookworm-slim AS builder
+FROM node:26-bookworm-slim AS builder
 
 WORKDIR /app
 
@@ -14,7 +14,7 @@ COPY scripts ./scripts
 RUN npm ci --legacy-peer-deps
 RUN npm run build
 
-FROM node:22-bookworm-slim AS runner
+FROM node:26-bookworm-slim AS runner
 
 WORKDIR /app
 
