@@ -40,9 +40,21 @@ def sh(cmd):
 
 
 def find_dockerfiles():
+    """Dockerfiles tracked by git, else all Dockerfiles under the tree."""
     out = sh(["git", "ls-files"])
-    files = out.splitlines()
-    return [f for f in files if DOCKERFILE_RE.search(f)]
+    files = [f for f in out.splitlines() if DOCKERFILE_RE.search(f)]
+    if files:
+        return files
+    # Not a git checkout (or nothing tracked) - walk the tree instead.
+    found = []
+    for dirpath, dirnames, filenames in os.walk(os.getcwd()):
+        dirnames[:] = [d for d in dirnames
+                       if d not in (".git", "node_modules", "__pycache__")]
+        for fn in filenames:
+            if DOCKERFILE_RE.search(fn):
+                found.append(os.path.relpath(os.path.join(dirpath, fn),
+                                            os.getcwd()))
+    return sorted(found)
 
 
 def parse_froms(text):
@@ -128,6 +140,43 @@ def _ghcr_token(repository):
         return None
 
 
+def _challenge_token(url, headers, status, hdrs):
+    """Follow a registry's WWW-Authenticate Bearer challenge to get a token.
+
+    Some registries (e.g. docker.dragonflydb.io) redirect auth to another
+    host such as ghcr.io. Returns None if there is no usable challenge.
+    """
+    www = None
+    for k, v in (hdrs or {}).items():
+        if k.lower() == "www-authenticate":
+            www = v
+            break
+    if not www or "bearer" not in www.lower():
+        return None
+    # The realm is the FIRST key=value pair, which follows the "Bearer "
+    # scheme - so parse the whole header, not the part after the first comma.
+    params = {}
+    for m in re.finditer(r'([A-Za-z_][\w-]*)="([^"]*)"', www):
+        params[m.group(1).lower()] = m.group(2)
+    realm = params.get("realm")
+    if not realm:
+        return None
+    q = []
+    if params.get("service"):
+        q.append(f"service={params['service']}")
+    if params.get("scope"):
+        q.append(f"scope={params['scope']}")
+    sep = "&" if "?" in realm else "?"
+    tok_url = realm + (sep + "&".join(q) if q else "")
+    st, body, _ = _http(tok_url, {"Accept": "application/json"})
+    if st != 200:
+        return None
+    try:
+        return json.loads(body).get("token")
+    except Exception:
+        return None
+
+
 def tag_exists(registry, repository, tag):
     """True if the tag exists upstream. None if the registry is unreachable."""
     if registry in ("docker.io", "registry-1.docker.io"):
@@ -183,12 +232,31 @@ def tag_exists(registry, repository, tag):
         except Exception:
             return None
         return tag in tags
-    # Unknown registry: try the public v2 endpoint anonymously.
+    # Unknown registry: try the public v2 endpoint anonymously, and follow a
+    # Bearer challenge if the registry issues one.
     url = f"https://{registry}/v2/{repository}/manifests/{tag}"
-    status, _, _ = _http(url, {}, method="HEAD")
+    accept = ", ".join([
+        "application/vnd.docker.distribution.manifest.list.v2+json",
+        "application/vnd.oci.image.index.v1+json",
+        "application/vnd.docker.distribution.manifest.v2+json",
+        "application/vnd.oci.image.manifest.v1+json",
+    ])
+    status, _, hdrs = _http(url, {"Accept": accept}, method="HEAD")
     if status == 200:
         return True
-    if status in (401, 403):
+    if status == 401:
+        tok = _challenge_token(url, None, status, hdrs)
+        if tok:
+            status, _, hdrs = _http(url, {"Accept": accept,
+                                          "Authorization": f"Bearer {tok}"},
+                                    method="HEAD")
+            if status == 200:
+                return True
+            if status == 404:
+                return False
+            return None
+        return None
+    if status == 404:
         return False
     return None
 
@@ -249,7 +317,24 @@ def main():
         for img, alias in refs:
             if alias:
                 stages.add(alias.lower())
+        # Resolve "ARG NAME=default" so templated tags
+        # (FROM img:${NAME}) are checked against their default value.
+        arg_defaults = {}
+        for line in text.splitlines():
+            m = re.match(r"\s*ARG\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(\S+)\s*$",
+                         line, re.I)
+            if m:
+                arg_defaults[m.group(1)] = m.group(2)
         for img, alias in refs:
+            if alias:
+                continue
+            # Substitute ${VAR} / $VAR with the declared ARG default.
+            if "$" in img:
+                def sub(m):
+                    var = m.group(1) or m.group(2)
+                    return arg_defaults.get(var, m.group(0))
+                img = re.sub(r"\$\{([A-Za-z_][A-Za-z0-9_]*)\}|\$([A-Za-z_][A-Za-z0-9_]*)",
+                             sub, img)
             reg, repo, tag, dig = split_ref(img)
             if alias:
                 continue
@@ -268,6 +353,13 @@ def main():
             if not tag:
                 problems.append((df, f"'{img}' has no tag (implicitly :latest)"))
                 print(f"  FAIL   {df} :: {img}  (no tag)")
+                continue
+            if "$" in tag:
+                problems.append(
+                    (df, f"'{img}' uses an unresolved template variable "
+                         f"'{tag}' - declare an ARG default with an "
+                         f"immutable version"))
+                print(f"  FAIL   {df} :: {img}  (unresolved template variable)")
                 continue
             if FLOATING.match(tag):
                 problems.append((df, f"'{img}' uses a floating tag '{tag}'"))
