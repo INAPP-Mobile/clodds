@@ -1,0 +1,30 @@
+name: pin-check
+
+# Fails when a Dockerfile image pin is floating, major-only, or missing
+# upstream in the registry. This is the gate that makes dependabot merges
+# safe to auto-apply and stops silent version drift.
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  schedule:
+    # Weekly drift sweep: catches upstream tags that get deleted or yanked.
+    - cron: '17 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pin-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pin-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check every image pin
+        run: python3 scripts/check_pins.py
