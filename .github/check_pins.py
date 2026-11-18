@@ -296,7 +296,13 @@ def check_pin_files(root):
 
 
 def main():
+    # Optional directory argument: check one specific repo checkout instead
+    # of whatever the current working directory happens to be. The CI
+    # workflow passes no argument, so it keeps checking its own checkout.
     root = os.getcwd()
+    if len(sys.argv) > 1:
+        root = os.path.abspath(sys.argv[1])
+        os.chdir(root)
     files = find_dockerfiles()
     if not files:
         print("No Dockerfiles found - nothing to check.")
